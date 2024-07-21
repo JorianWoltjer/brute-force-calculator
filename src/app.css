@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+html,
+body {
+	font-family: 'Montserrat', sans-serif;
+	background-color: #2c3e50;
+	color: #ecf0f1;
+}
+
+input,
+textarea {
+	font-family: monospace;
+	font-size: 16px;
+	background-color: #3b5065;
+	color: #ecf0f1;
+	border: 1px solid #3b5065 !important;
+	padding: 8px;
+	margin: 2px 0;
+}
+input:focus,
+textarea:focus {
+	border: 1px solid #bdc3c7 !important;
+	outline: none;
+	background-color: #425a71;
+}
+
+input:invalid {
+	border: 1px solid #e74c3c !important;
+}
+
+hr {
+	border: 1px solid #3b5065;
+	width: 100%;
+}
+
+.container {
+	width: 100%;
+	max-width: 800px;
+	margin: 0 auto;
+	padding: 20px;
+}
+
+.monospace {
+	font-family: monospace;
+	font-size: 16px;
+}
+.w-small {
+	width: 40px;
+	text-align: center;
+}
+.w-large {
+	width: 400px;
+}
+.w-full {
+	width: 100%;
+}
+.svelte-fa {
+	color: #7f8c8d;
+	font-size: 16px;
+	margin-left: 10px;
+	margin-right: 6px;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+/* Firefox */
+input[type='number'] {
+	-moz-appearance: textfield;
+}
