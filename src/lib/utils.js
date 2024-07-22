@@ -1,6 +1,4 @@
 export function expandRange(input) {
-  console.log({ input })
-
   let resultSet = new Set();
   let i = 0;
 
@@ -46,15 +44,33 @@ export function generateExamples(n, length, charset) {
   return examples;
 }
 
+function isContinuous(arr) {
+  return arr.every((value, index) => index === 0 || value.charCodeAt(0) === arr[index - 1].charCodeAt(0) + 1);
+}
+
 export function settingsFromExamples(examples) {
   examples = examples.split("\n").filter(Boolean);
-  console.log(examples);
 
   const length = examples.reduce((acc, example) => Math.max(acc, example.length), 0);
-  const charset = Array.from(new Set(examples.join("").split(""))).toSorted().join("");
-  // TODO: guess missing characters from charset like 0-9, a-z, A-Z
+  let charset = Array.from(new Set(examples.join("").split(""))).toSorted().join("");
 
-  console.log({ length, charset })
+  // Guess missing characters from common charset like 0-9, A-Z, a-z, 0-9a-f
+  const ranges = ["0-9a-f", "0-9", "A-Z", "a-z"];
+  for (const range of ranges.map(expandRange)) {
+    const regex = new RegExp(String.raw`[${range}]+`, "g");
+    charset = charset.replace(regex, (match => {
+      // If charset has more than half of a range and is not continuous
+      if (match.length > range.length / 2 && !isContinuous(match.split(""))) {
+        return range;
+      }
+      return match;
+    }));
+  }
+  // Replace long ranges with their shorthand (eg. 0123456789 -> 0-9)
+  ranges.forEach(range => {
+    charset = charset.replace(expandRange(range), range);
+  });
+
   return { length, charset };
 }
 
