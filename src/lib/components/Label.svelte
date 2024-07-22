@@ -5,10 +5,11 @@
   let for_;
   export { for_ as for };
   export let tooltip;
+  export let nocolon = false;
 </script>
 
 <label for={for_} data-tooltip={tooltip}>
-  <slot /><sup class="icon"><Fa icon={faQuestion} /></sup>:
+  <slot /><sup class="icon"><Fa icon={faQuestion} /></sup>{nocolon ? '' : ':'}
 </label>
 
 <style>

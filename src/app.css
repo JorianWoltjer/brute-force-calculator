@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,100..900;1,100..900&display=swap');
 
 :root {
   --foreground: #ecf0f1;
@@ -19,7 +18,7 @@
 
 html,
 body {
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Inter', sans-serif;
   background-color: var(--background);
   color: var(--foreground);
 }
@@ -30,6 +29,7 @@ h1 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 0;
+  font-weight: 700;
 }
 
 .subtitle {
@@ -39,7 +39,7 @@ h1 {
 
 input,
 textarea {
-  font-family: 'Roboto Mono', monospace;
+  font-family: monospace;
   font-size: 16px;
   background-color: var(--background-light);
   color: var(--foreground);
@@ -71,7 +71,7 @@ hr {
 }
 
 .monospace {
-  font-family: 'Roboto Mono', monospace;
+  font-family: monospace;
   font-size: 16px;
 }
 .muted {

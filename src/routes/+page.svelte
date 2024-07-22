@@ -3,6 +3,7 @@
 
   import Fa from 'svelte-fa'
   import { faArrowsLeftRight, faHashtag, faXmark, faGauge, faCalculator, faBars } from '@fortawesome/free-solid-svg-icons'
+  import { math } from 'mathlifier';
 
   import { expandRange, generateExamples, selectOnFocus, settingsFromExamples, formatBigNumber, validateInteger, validateFloat } from "$lib/utils";
 	import { Time, Label, Separator } from "$lib/components";
@@ -12,6 +13,7 @@
   const rate = writable(1000);
   const length = writable(6);
   const interval = writable(1000 / $rate);
+  const mode = writable("target");
 
   const setRate = (value) => {
     rate.set(value);
@@ -24,7 +26,16 @@
 
   $: charsetFull = expandRange(charset);
   $: charsetLength = charsetFull.length;
-  $: amount = BigInt(charsetLength)**BigInt($length||0);
+  $: amount = (() => {
+    // range^length
+    let amount = BigInt(charsetLength||0)**BigInt($length||0);
+
+    if ($mode === "collision") {  // Birthday Problem
+      return Math.floor(Math.sqrt(Math.PI / 2 * Number(amount)));
+    } else {
+      return amount;
+    }
+  })();
   $: time = Number(amount) / $rate;
 
   $: examples = generateExamples(3, $length, charsetFull);
@@ -72,13 +83,28 @@
   charset = charset_;
 }}>
 {examples.join("\n")}</textarea>
+<br /><br />
+<label for="mode">Mode:</label>
+<br />
+<input type="radio" name="mode" id="target" checked on:change={() => mode.set("target")}>
+<Label for="target" tooltip="When a specific string will be generated" nocolon><i>Target</i></Label>
+<br />
+<input type="radio" name="mode" id="collision" on:change={() => mode.set("collision")}>
+<Label for="collision" tooltip="When two of the same strings are generated (aka. Birthday Problem)" nocolon><i>Collision</i></Label>
 
 <Separator icon={faCalculator} color="#3498db">Results</Separator>
-<p># of possible strings:
-  <span class="muted">{charsetLength}<sup>{$length}</sup> =</span>
+<p># of strings:
+  <span class="muted">{@html math((() => {
+    const amount = `${charsetLength}^{${$length}}`;
+    if ($mode === "collision") {  // Birthday Problem
+      return `\\sqrt{\\frac{\\pi}{2} \\times ${amount}}`;
+    } else {
+      return amount;
+    }
+  })())} =</span>
   <u class="click-select">{formatBigNumber(amount)}</u>
 </p>
-<p>Time to brute force:
-  <span class="muted"><sup>{formatBigNumber(amount, true)}</sup>&frasl;<sub>{$rate}</sub> =</span>
+<p><b>Expected time</b>:
+  <span class="muted">{@html math(`\\frac{${formatBigNumber(amount, true)}}{${$rate}}`)} =</span>
   <span class="click-select"><Time {time} /></span>
 </p>
