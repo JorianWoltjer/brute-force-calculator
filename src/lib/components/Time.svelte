@@ -42,15 +42,6 @@
 </span>
 
 <style>
-  :root {
-    --difficulty-very-easy: #2ecc71;
-    --difficulty-easy: #27ae60;
-    --difficulty-medium: #f1c40f;
-    --difficulty-hard: #e67e22;
-    --difficulty-very-hard: #e74c3c;
-    --difficulty-impossible: #ae66cb;
-  }
-
   .result {
     font-weight: bold;
     text-decoration: underline;

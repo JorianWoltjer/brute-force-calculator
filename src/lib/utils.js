@@ -1,4 +1,6 @@
 export function expandRange(input) {
+  console.log({ input })
+
   let resultSet = new Set();
   let i = 0;
 
@@ -50,15 +52,17 @@ export function settingsFromExamples(examples) {
 
   const length = examples.reduce((acc, example) => Math.max(acc, example.length), 0);
   const charset = Array.from(new Set(examples.join("").split(""))).toSorted().join("");
+  // TODO: guess missing characters from charset like 0-9, a-z, A-Z
 
+  console.log({ length, charset })
   return { length, charset };
 }
 
-export function formatBigNumber(n) {
+export function formatBigNumber(n, copyable = false) {
   if (n >= 1e13) {
     return n.toLocaleString(undefined, { notation: 'scientific' });
   } else {
-    return n.toLocaleString();
+    return copyable ? n.toString() : n.toLocaleString();
   }
 }
 
