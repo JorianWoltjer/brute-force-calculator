@@ -41,7 +41,7 @@
   $: examples = generateExamples(3, $length, charsetFull);
 </script>
 
-<h1>Brute Force Calculator</h1>
+<h1><a href="https://github.com/JorianWoltjer/brute-force-calculator" target="_blank">Brute Force Calculator</a></h1>
 <p class="subtitle">Calculate the time it would take to brute force a string given a certain search space and speed.</p>
 
 <Separator icon={faGauge} color="#e74c3c">Speed</Separator>
