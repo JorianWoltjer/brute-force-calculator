@@ -6,7 +6,7 @@
   import { math } from 'mathlifier';
 
   import { expandRange, generateExamples, selectOnFocus, settingsFromExamples, formatBigNumber, validateInteger, validateFloat } from "$lib/utils";
-	import { Time, Label, Separator } from "$lib/components";
+  import { Time, Label, Separator } from "$lib/components";
 
   let charset = "0-9";
 
