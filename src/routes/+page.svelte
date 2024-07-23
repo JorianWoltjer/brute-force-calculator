@@ -89,13 +89,15 @@
 <input class="w-small" type="number" id="length" bind:value={$length} use:selectOnFocus use:validateInteger={length} />
 <Fa icon={faXmark} />
 <Label for="charset" tooltip="List of characters per index. Can use ranges like '0-9' or loose letters like 'abc'">Charset</Label>
-<div class="w-large">
+<div style="width: 400px">
   <input style="width: min(calc(400px - 2*8px), 100%);" type="text" id="charset" bind:value={charset} list="charsets" />
   <br />
   <datalist id="charsets">
     <option value="0-9"></option>
-    <option value="0-9A-Z"></option>
+    <option value="0-9a-f"></option>
     <option value="a-z"></option>
+    <option value="0-9a-z"></option>
+    <option value="a-zA-Z"></option>
     <option value="0-9A-Za-z"></option>
   </datalist>
   <span style="overflow-wrap: anywhere" class="monospace muted">{charsetFull}</span>
@@ -106,6 +108,7 @@
 <Label for="examples" tooltip="View examples of settings or paste examples to extract settings!">Examples</Label>
 <br>
 <!-- svelte-ignore a11y-autofocus -->
+<div style="display: flex;">
 <textarea name="examples" id="examples" rows="3" class="w-full" style="resize: vertical" data-gramm="false" spellcheck="false" autofocus 
   use:selectOnFocus on:change={(e) => {
   const { length: length_, charset: charset_ } = settingsFromExamples(e.target.value);
@@ -113,6 +116,7 @@
   charset = charset_;
 }}>
 {examples.join("\n")}</textarea>
+</div>
 <br /><br />
 <span>
   <Label for="targets" tooltip="Number of strings to find in the search space">Targets</Label>

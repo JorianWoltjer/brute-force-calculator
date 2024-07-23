@@ -23,7 +23,7 @@
   display: flex;
   align-items: center;
   text-align: center;
-  margin: 20px 0;
+  margin: 24px 0;
 }
 .separator::before,
 .separator::after {
@@ -38,7 +38,7 @@
 }
 .separator-text {
   padding: 0 8px;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: bold;
 }
 .separator.left :global(.svelte-fa) {
