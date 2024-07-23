@@ -3,10 +3,19 @@
 
   export let icon;
   export let color = 'var(--muted)';
+  export let direction = 'left';
 </script>
 
-<div class="separator">
-  <span class="separator-text"><Fa style="color: {color}" icon={icon} /><slot /></span>
+<div class="separator {direction}">
+  <span class="separator-text">
+    {#if icon && direction === 'left'}
+      <Fa icon={icon} color={color} />
+    {/if}
+    <slot />
+    {#if icon && direction === 'right'}
+      <Fa icon={icon} color={color} />
+    {/if}
+  </span>
 </div>
 
 <style>
@@ -21,21 +30,23 @@
   content: '';
   border-bottom: 2px solid var(--muted);
 }
-.separator:not(:empty)::before {
-  /* flex: 1; */
+.separator.left::before, .separator.right::after {
   width: 40px;
-  margin-right: 0.25em;
 }
-.separator:not(:empty)::after {
-  flex: 10;
-  margin-left: 0.25em;
+.separator.left::after, .separator.right::before {
+  flex: 1;
 }
 .separator-text {
-  padding: 0 6px;
+  padding: 0 8px;
   font-size: 18px;
   font-weight: bold;
 }
-.separator :global(.svelte-fa) {
-  margin-left: 0;
+.separator.left :global(.svelte-fa) {
+  margin: 0;
+  margin-right: 0.25em;
+}
+.separator.right :global(.svelte-fa) {
+  margin: 0;
+  margin-left: 0.25em;
 }
 </style>

@@ -9,12 +9,20 @@
   import { expandRange, generateExamples, selectOnFocus, settingsFromExamples, formatBigNumber, validateInteger, validateFloat } from "$lib/utils";
   import { Time, Label, Separator } from "$lib/components";
 
+  const initial = {
+    rate: 1000,
+    length: 6,
+    charset: "0-9",
+    targets: 1,
+    collision: false,
+  }
 
-  let charset = "0-9";
-  const rate = writable(1000);
-  const length = writable(6);
+  const rate = writable(initial.rate);
   const interval = writable(1000 / $rate);
-  const mode = writable("target");
+  const length = writable(initial.length);
+  let charset = initial.charset;
+  const targets = writable(initial.targets);
+  let collision = initial.collision;
 
   const setRate = (value) => {
     rate.set(value);
@@ -31,10 +39,10 @@
     // range^length
     let amount = BigInt(charsetLength||0)**BigInt($length||0);
 
-    if ($mode === "collision") {  // Birthday Problem
+    if (collision) {  // Birthday Problem
       return Math.floor(Math.sqrt(Math.PI / 2 * Number(amount)));
     } else {
-      return amount;
+      return amount / BigInt(($targets||0)+1);
     }
   })();
   $: time = Number(amount) / $rate;
@@ -42,15 +50,23 @@
 
   // Save state in URL
   let loaded = false;
-  $: if (loaded) location.replace('#' + new URLSearchParams({ rate: $rate, length: $length, charset, mode: $mode }));
-
+  $: if (loaded) {
+    const params = { rate: $rate, length: $length, charset, targets: $targets, collision };
+    // Only save what changed
+    for (const key in params) if (params[key] === initial[key]) delete params[key];
+    // Only save if there are changes
+    if (Object.keys(params).length !== 0 || location.hash) {
+      location.replace('#' + new URLSearchParams(params))
+    }
+  };
+  // Load state from URL
   onMount(() => {
     const params = new URLSearchParams(location.hash.slice(1));
-    console.log(params);
     if (params.has('rate')) rate.set(Number(params.get('rate')));
     if (params.has('length')) length.set(Number(params.get('length')));
     if (params.has('charset')) charset = params.get('charset');
-    if (params.has('mode')) mode.set(params.get('mode'));
+    if (params.has('targets')) targets.set(Number(params.get('targets')));
+    if (params.has('collision')) collision = params.get('collision') === "true";
     loaded = true;
   });
 </script>
@@ -90,7 +106,7 @@
 <Label for="examples" tooltip="View examples of settings or paste examples to extract settings!">Examples</Label>
 <br>
 <!-- svelte-ignore a11y-autofocus -->
-<textarea name="examples" id="examples" rows="3" class="w-full" style="resize: vertical" data-gramm="false" autofocus 
+<textarea name="examples" id="examples" rows="3" class="w-full" style="resize: vertical" data-gramm="false" spellcheck="false" autofocus 
   use:selectOnFocus on:change={(e) => {
   const { length: length_, charset: charset_ } = settingsFromExamples(e.target.value);
   length.set(length_);
@@ -98,27 +114,38 @@
 }}>
 {examples.join("\n")}</textarea>
 <br /><br />
-<label for="mode">Mode:</label>
-<br />
-<input type="radio" name="mode" id="target" checked={$mode === "target"} on:change={() => mode.set("target")}>
-<Label for="target" tooltip="When a specific string will be generated" nocolon><i>Target</i></Label>
-<br />
-<input type="radio" name="mode" id="collision" checked={$mode === "collision"} on:change={() => mode.set("collision")}>
-<Label for="collision" tooltip="When two of the same strings are generated (aka. Birthday Problem)" nocolon><i>Collision</i></Label>
+<span>
+  <Label for="targets" tooltip="Number of strings to find in the search space">Targets</Label>
+  <input type="number" id="targets" bind:value={$targets} use:selectOnFocus use:validateInteger={targets} disabled={collision} />
+</span>
+<input type="checkbox" name="mode" id="collision" bind:checked={collision}>
+<Label for="collision" tooltip="Find when two of the same strings will be generated (aka. Birthday Problem)" nocolon><span style="user-select: none">Collision</span></Label>
 
-<Separator icon={faCalculator} color="#3498db">Results</Separator>
-<p># of strings:
-  <span class="muted">{@html math((() => {
-    const amount = `${charsetLength}^{${$length}}`;
-    if ($mode === "collision") {  // Birthday Problem
-      return `\\sqrt{\\frac{\\pi}{2} \\times ${amount}}`;
-    } else {
-      return amount;
-    }
-  })())} =</span>
-  <u class="click-select">{formatBigNumber(amount)}</u>
-</p>
-<p><b>Expected time</b>:
-  <span class="muted">{@html math(`\\frac{${formatBigNumber(amount, true)}}{${$rate}}`)} =</span>
-  <span class="click-select"><Time {time} /></span>
-</p>
+<Separator icon={faCalculator} color="#3498db" direction="right">Results</Separator>
+<table class="results">
+  <tr><td># of strings:</td>
+    <td style="text-align: center;"><span class="muted">{@html math((() => {
+      const amount = `${charsetLength}^{${$length}}`;
+      if (collision) {  // Birthday Problem
+        return `\\sqrt{\\frac{\\pi}{2} \\times ${amount}}`;
+      } else {
+        return `${amount}/${$targets+1}`;
+      }
+    })())} =</span></td>
+    <td style="text-align: right;"><u class="click-select">{formatBigNumber(amount)}</u></td>
+  </tr>
+  <tr><td><b>Expected time</b>:</td>
+    <td style="text-align: center;"><span class="muted">{@html math(`\\frac{${formatBigNumber(amount, true)}}{${$rate}}`)} =</span></td>
+    <td style="text-align: right;"><span class="click-select"><Time {time} /></span></td>
+  </tr>
+</table>
+<br />
+<br />
+<br />
+<button on:click={() => {
+    rate.set(initial.rate);
+    length.set(initial.length);
+    charset = initial.charset;
+    targets.set(initial.targets);
+    collision = initial.collision;
+  }}>Reset</button>
