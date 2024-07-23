@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { writable } from 'svelte/store';
+  import { pushState } from '$app/navigation';
 
   import Fa from 'svelte-fa'
   import { faArrowsLeftRight, faHashtag, faXmark, faGauge, faCalculator, faBars } from '@fortawesome/free-solid-svg-icons'
@@ -143,13 +144,15 @@
     <td style="text-align: right;"><span class="click-select"><Time {time} /></span></td>
   </tr>
 </table>
-<br />
-<br />
-<br />
+<br /><br /><br />
 <button on:click={() => {
-    rate.set(initial.rate);
-    length.set(initial.length);
-    charset = initial.charset;
-    targets.set(initial.targets);
-    collision = initial.collision;
-  }}>Reset</button>
+  pushState(location, null)
+  rate.set(initial.rate);
+  length.set(initial.length);
+  charset = initial.charset;
+  targets.set(initial.targets);
+  collision = initial.collision;
+}}>Reset</button>
+<button on:click={() => {
+  navigator.clipboard.writeText(location.href);
+}}>Copy Link</button>
