@@ -1,4 +1,5 @@
 <script>
+  import { onMount } from 'svelte';
   import { writable } from 'svelte/store';
 
   import Fa from 'svelte-fa'
@@ -8,8 +9,8 @@
   import { expandRange, generateExamples, selectOnFocus, settingsFromExamples, formatBigNumber, validateInteger, validateFloat } from "$lib/utils";
   import { Time, Label, Separator } from "$lib/components";
 
-  let charset = "0-9";
 
+  let charset = "0-9";
   const rate = writable(1000);
   const length = writable(6);
   const interval = writable(1000 / $rate);
@@ -37,8 +38,21 @@
     }
   })();
   $: time = Number(amount) / $rate;
-
   $: examples = generateExamples(3, $length, charsetFull);
+
+  // Save state in URL
+  let loaded = false;
+  $: if (loaded) location.replace('#' + new URLSearchParams({ rate: $rate, length: $length, charset, mode: $mode }));
+
+  onMount(() => {
+    const params = new URLSearchParams(location.hash.slice(1));
+    console.log(params);
+    if (params.has('rate')) rate.set(Number(params.get('rate')));
+    if (params.has('length')) length.set(Number(params.get('length')));
+    if (params.has('charset')) charset = params.get('charset');
+    if (params.has('mode')) mode.set(params.get('mode'));
+    loaded = true;
+  });
 </script>
 
 <h1><a href="https://github.com/JorianWoltjer/brute-force-calculator" target="_blank">Brute Force Calculator</a></h1>
@@ -86,10 +100,10 @@
 <br /><br />
 <label for="mode">Mode:</label>
 <br />
-<input type="radio" name="mode" id="target" checked on:change={() => mode.set("target")}>
+<input type="radio" name="mode" id="target" checked={$mode === "target"} on:change={() => mode.set("target")}>
 <Label for="target" tooltip="When a specific string will be generated" nocolon><i>Target</i></Label>
 <br />
-<input type="radio" name="mode" id="collision" on:change={() => mode.set("collision")}>
+<input type="radio" name="mode" id="collision" checked={$mode === "collision"} on:change={() => mode.set("collision")}>
 <Label for="collision" tooltip="When two of the same strings are generated (aka. Birthday Problem)" nocolon><i>Collision</i></Label>
 
 <Separator icon={faCalculator} color="#3498db">Results</Separator>
