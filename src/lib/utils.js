@@ -1,3 +1,7 @@
+import Mexp from 'math-expression-evaluator';
+
+const mexp = new Mexp();
+
 export function expandRange(input) {
   let resultSet = new Set();
   let i = 0;
@@ -96,6 +100,18 @@ export function selectOnFocus(node) {
   };
 }
 
+export function validateExpression(node, store) {
+  store.subscribe(value => {
+    try {
+      mathEval(value);
+      node.setCustomValidity('');
+    } catch (error) {
+      node.setCustomValidity(error.message);
+    }
+    node.reportValidity();
+  });
+}
+
 export function validateInteger(node, store) {
   store.subscribe(value => {
     if (value === null) {
@@ -120,4 +136,20 @@ export function validateFloat(node, store) {
     }
     node.reportValidity();
   });
+}
+
+export function mathEval(expression, error = true) {
+  try {
+    expression = expression
+      .replaceAll('_', '')
+      .replaceAll('**', '^')
+      .replaceAll('Infinity', '(1/0)');
+    return mexp.eval(expression);
+  } catch (e) {
+    if (error) {
+      throw new Error(e.message);
+    } else {
+      return NaN;
+    }
+  }
 }

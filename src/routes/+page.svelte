@@ -7,32 +7,29 @@
   import { faArrowsLeftRight, faHashtag, faXmark, faGauge, faCalculator, faBars } from '@fortawesome/free-solid-svg-icons'
   import { math } from 'mathlifier';
 
-  import { expandRange, generateExamples, selectOnFocus, settingsFromExamples, formatBigNumber, validateInteger, validateFloat } from "$lib/utils";
+  import { expandRange, generateExamples, selectOnFocus, settingsFromExamples, formatBigNumber, validateExpression, validateInteger, validateFloat, mathEval } from "$lib/utils";
   import { Time, Label, Separator } from "$lib/components";
 
   const initial = {
-    rate: 1000,
+    rate: "1000",
     length: 6,
     charset: "0-9",
     targets: 1,
     collision: false,
-  }
+  };
 
-  const rate = writable(initial.rate);
-  const interval = writable(1000 / $rate);
+  const rateExpr = writable(initial.rate);
+  const interval = writable(1000 / $rateExpr);
   const length = writable(initial.length);
   let charset = initial.charset;
   const targets = writable(initial.targets);
   let collision = initial.collision;
-
-  const setRate = (value) => {
-    rate.set(value);
-  }
+  
   const setInterval = (value) => {
     interval.set(value);
   }
-  $: setRate(1000 / $interval);
-  $: setInterval(1000 / $rate);
+  $: rate = mathEval($rateExpr, false);
+  $: setInterval(1000 / rate);
 
   $: charsetFull = expandRange(charset);
   $: charsetLength = charsetFull.length;
@@ -46,13 +43,13 @@
       return amount / BigInt(($targets||0)+1);
     }
   })();
-  $: time = Number(amount) / $rate;
+  $: time = Number(amount) / rate;
   $: examples = generateExamples(3, $length, charsetFull);
 
   // Save state in URL
   let loaded = false;
   $: if (loaded) {
-    const params = { rate: $rate, length: $length, charset, targets: $targets, collision };
+    const params = { rate: $rateExpr, length: $length, charset, targets: $targets, collision };
     // Only save what changed
     for (const key in params) if (params[key] === initial[key]) delete params[key];
     // Only save if there are changes
@@ -63,7 +60,7 @@
   // Load state from URL
   onMount(() => {
     const params = new URLSearchParams(location.hash.slice(1));
-    if (params.has('rate')) rate.set(Number(params.get('rate')));
+    if (params.has('rate')) rateExpr.set(params.get('rate'));
     if (params.has('length')) length.set(Number(params.get('length')));
     if (params.has('charset')) charset = params.get('charset');
     if (params.has('targets')) targets.set(Number(params.get('targets')));
@@ -76,47 +73,56 @@
 <p class="subtitle">Calculate the time it would take to brute force a string given a certain search space and speed.</p>
 
 <Separator icon={faGauge} color="#e74c3c">Speed</Separator>
-<Label for="rate" tooltip="Number of requests per second">Rate</Label>
-<input type="number" id="rate" bind:value={$rate} step="any" use:validateFloat={rate} /> /s
-<Fa icon={faArrowsLeftRight} />
-<Label for="interval" tooltip="Time between requests">Interval</Label>
-<input type="number" id="interval" bind:value={$interval} step="any" use:validateFloat={rate} /> ms
+<div class="inputs-row">
+  <Label for="rate" tooltip="Number of requests per second (supports expressions)">Rate</Label>
+  <div style="width: 300px">
+    <input type="text" id="rate" bind:value={$rateExpr} step="any" use:validateExpression={rateExpr} /> /s
+    {#if rate.toString() !== $rateExpr}
+      <br />
+      <span style="overflow-wrap: anywhere" class="monospace muted">{rate}</span>
+    {/if}
+  </div>
+  <Fa icon={faArrowsLeftRight} />
+  <Label for="interval" tooltip="Time between requests">Interval</Label>
+  <input type="number" id="interval" bind:value={$interval} step="any" use:validateFloat={interval} on:input={
+    (e) => rateExpr.set((1000 / Number(e.target.value)).toString())
+  } /> ms
+</div>
 <small class="hint"><b>Tip: </b>Over a network, asyncronous requests and distributed IPs can drastically increase the rate even when limited.
   In local attacks, use fast algorithms and multiprocessing.</small>
 
 <Separator icon={faBars} color="#f1c40f">Search Space</Separator>
 <div class="inputs-row">
-<label for="length">Length:</label>
-<input class="w-small" type="number" id="length" bind:value={$length} use:selectOnFocus use:validateInteger={length} />
-<Fa icon={faXmark} />
-<Label for="charset" tooltip="List of characters per index. Can use ranges like '0-9' or loose letters like 'abc'">Charset</Label>
-<div style="width: 400px">
-  <input style="width: min(calc(400px - 2*8px), 100%);" type="text" id="charset" bind:value={charset} list="charsets" />
-  <br />
-  <datalist id="charsets">
-    <option value="0-9"></option>
-    <option value="0-9a-f"></option>
-    <option value="a-z"></option>
-    <option value="0-9a-z"></option>
-    <option value="a-zA-Z"></option>
-    <option value="0-9A-Za-z"></option>
-  </datalist>
-  <span style="overflow-wrap: anywhere" class="monospace muted">{charsetFull}</span>
-</div>
-<Fa icon={faHashtag} />
-<input class="w-small" type="number" id="charset-length" bind:value={charsetLength} use:selectOnFocus />
+  <label for="length">Length:</label>
+  <input class="w-small" type="number" id="length" bind:value={$length} use:selectOnFocus use:validateInteger={length} />
+  <Fa icon={faXmark} />
+  <Label for="charset" tooltip="List of characters per index. Can use ranges like '0-9' or loose letters like 'abc'">Charset</Label>
+  <div style="width: 400px">
+    <input style="width: min(calc(400px - 2*8px), 100%);" type="text" id="charset" bind:value={charset} list="charsets" />
+    <br />
+    <datalist id="charsets">
+      <option value="0-9"></option>
+      <option value="0-9a-f"></option>
+      <option value="a-z"></option>
+      <option value="0-9a-z"></option>
+      <option value="a-zA-Z"></option>
+      <option value="0-9A-Za-z"></option>
+    </datalist>
+    <span style="overflow-wrap: anywhere" class="monospace muted">{charsetFull}</span>
+  </div>
+  <Fa icon={faHashtag} />
+  <input class="w-small" type="number" id="charset-length" bind:value={charsetLength} use:selectOnFocus />
 </div>
 <Label for="examples" tooltip="View examples of settings or paste examples to extract settings!">Examples</Label>
 <br>
 <!-- svelte-ignore a11y-autofocus -->
 <div style="display: flex;">
-<textarea name="examples" id="examples" rows="3" class="w-full" style="resize: vertical" data-gramm="false" spellcheck="false" autofocus 
-  use:selectOnFocus on:change={(e) => {
-  const { length: length_, charset: charset_ } = settingsFromExamples(e.target.value);
-  length.set(length_);
-  charset = charset_;
-}}>
-{examples.join("\n")}</textarea>
+  <textarea name="examples" id="examples" rows="3" class="w-full" style="resize: vertical" data-gramm="false" spellcheck="false" autofocus 
+    use:selectOnFocus on:change={(e) => {
+    const { length: length_, charset: charset_ } = settingsFromExamples(e.target.value);
+    length.set(length_);
+    charset = charset_;
+  }}>{examples.join("\n")}</textarea>
 </div>
 <br /><br />
 <span>
@@ -140,14 +146,14 @@
     <td style="text-align: right;"><u class="click-select">{formatBigNumber(amount)}</u></td>
   </tr>
   <tr><td><b>Expected time</b>:</td>
-    <td style="text-align: center;"><span class="muted">{@html math(`\\frac{${formatBigNumber(amount, true)}}{${$rate}}`)} =</span></td>
+    <td style="text-align: center;"><span class="muted">{@html math(`\\frac{${formatBigNumber(amount, true)}}{${rate}}`)} =</span></td>
     <td style="text-align: right;"><span class="click-select"><Time {time} /></span></td>
   </tr>
 </table>
 <br /><br /><br />
 <button on:click={() => {
   pushState(location, null)
-  rate.set(initial.rate);
+  rateExpr.set(initial.rate);
   length.set(initial.length);
   charset = initial.charset;
   targets.set(initial.targets);

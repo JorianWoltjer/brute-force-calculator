@@ -8,7 +8,7 @@
   --muted: #8b9899;
   --danger: #e74c3c;
 
-  --difficulty-very-easy: #2ecc71;
+  --difficulty-very-easy: #30df86;
   --difficulty-easy: #27ae60;
   --difficulty-medium: #f1c40f;
   --difficulty-hard: #e67e22;
@@ -129,6 +129,7 @@ hr {
 .monospace {
   font-family: monospace;
   font-size: 20px;
+  margin: 0 2px;
 }
 .muted {
   color: var(--muted);
